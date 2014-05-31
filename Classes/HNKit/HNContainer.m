@@ -16,7 +16,7 @@
 @synthesize entries, moreToken;
 
 - (void)loadFromDictionary:(NSDictionary *)dictionary complete:(BOOL)complete {
-    [self setMoreToken:[dictionary objectForKey:@"more"]];
+    [self setMoreToken:dictionary[@"more"]];
 
     [super loadFromDictionary:dictionary complete:complete];
 }
@@ -42,7 +42,7 @@
     NSString *path = [moreURL path];
     if ([path hasPrefix:@"/"]) path = [path substringFromIndex:[@"/" length]];
     NSDictionary *parameters = [moreURL parameterDictionary];
-    if (parameters == nil) parameters = [NSDictionary dictionary];
+    if (parameters == nil) parameters = @{};
     
     moreRequest = [[HNAPIRequest alloc] initWithSession:session target:self action:@selector(moreRequest:completedWithResponse:error:)];
     [moreRequest performRequestWithPath:path parameters:parameters];

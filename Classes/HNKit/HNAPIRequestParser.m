@@ -77,13 +77,13 @@ typedef enum {
                 }
             }
                         
-            [result setObject:value forKey:@"about"];
+            result[@"about"] = value;
         } else if ([key isEqual:@"karma"]) {
-            [result setObject:value forKey:@"karma"];
+            result[@"karma"] = value;
         } else if ([key isEqual:@"avg"]) {
-            [result setObject:value forKey:@"average"];
+            result[@"average"] = value;
         } else if ([key isEqual:@"created"]) {
-            [result setObject:value forKey:@"created"];
+            result[@"created"] = value;
         }
     }
     
@@ -115,7 +115,7 @@ typedef enum {
 - (XMLElement *)bodyRowElementForDocument:(XMLDocument *)document {
     NSArray *elements = [self mainRowsForDocument:document];
     NSInteger index = [self bodyIndexForDocument:document];
-    XMLElement *body = [elements objectAtIndex:(index - 1)];
+    XMLElement *body = elements[(index - 1)];
     return body;
 }
 
@@ -187,15 +187,15 @@ typedef enum {
 }
 
 - (NSDictionary *)parseSubmissionWithElements:(NSArray *)elements {
-    XMLElement *first = [elements objectAtIndex:0];
-    XMLElement *second = [elements objectAtIndex:1];
+    XMLElement *first = elements[0];
+    XMLElement *second = elements[1];
     XMLElement *fourth = nil;
-    if ([elements count] >= 4) fourth = [elements objectAtIndex:3];
+    if ([elements count] >= 4) fourth = elements[3];
     
     // These have a number of edge cases (e.g. "discuss"),
     // so use sane default values in case of one of those.
-    NSNumber *points = [NSNumber numberWithInt:0];
-    NSNumber *comments = [NSNumber numberWithInt:0];
+    NSNumber *points = @0;
+    NSNumber *comments = @0;
     
     NSString *title = nil;
     NSString *user = nil;
@@ -214,7 +214,7 @@ typedef enum {
                     
                     // In "ask HN" posts, we need to extract the id (and fix the URL) here.
                     if ([href hasPrefix:@"item?id="]) {
-                        identifier = [NSNumber numberWithInt:[[href substringFromIndex:[@"item?id=" length]] intValue]];
+                        identifier = @([[href substringFromIndex:[@"item?id=" length]] intValue]);
                         href = nil;
                     }
                 }
@@ -242,13 +242,13 @@ typedef enum {
                         user = [user stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
                     } else if ([[element2 attributeWithName:@"href"] hasPrefix:@"item?id="]) {
                         NSInteger end = [content rangeOfString:@" "].location;
-                        if (end != NSNotFound) comments = [NSNumber numberWithInt:[[content substringToIndex:end] intValue]];
+                        if (end != NSNotFound) comments = @([[content substringToIndex:end] intValue]);
                         
-                        identifier = [NSNumber numberWithInt:[[[element2 attributeWithName:@"href"] substringFromIndex:[@"item?id=" length]] intValue]];
+                        identifier = @([[[element2 attributeWithName:@"href"] substringFromIndex:[@"item?id=" length]] intValue]);
                     }
                 } else if ([tag isEqual:@"span"]) {
                     NSInteger end = [content rangeOfString:@" "].location;
-                    if (end != NSNotFound) points = [NSNumber numberWithInt:[[content substringToIndex:end] intValue]];
+                    if (end != NSNotFound) points = @([[content substringToIndex:end] intValue]);
                 }
             }
         } else if ([[element attributeWithName:@"class"] isEqual:@"title"] && [[[[element content] stringByRemovingHTMLTags] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@"More"]) {
@@ -279,19 +279,19 @@ typedef enum {
     }
     
     if (more != nil) {
-        return [NSDictionary dictionaryWithObject:more forKey:@"more"];
+        return @{@"more": more};
     } else if (user != nil && title != nil && identifier != nil) {
         // XXX: better sanity checks?
         NSMutableDictionary *item = [NSMutableDictionary dictionary];
-        [item setObject:user forKey:@"user"];
-        [item setObject:points forKey:@"points"];
-        [item setObject:title forKey:@"title"];
-        [item setObject:comments forKey:@"numchildren"];
-        if (href != nil) [item setObject:href forKey:@"url"];
-        [item setObject:date forKey:@"date"];
-        if (body != nil) [item setObject:body forKey:@"body"];
-        if (more != nil) [item setObject:more forKey:@"more"];
-        [item setObject:identifier forKey:@"identifier"];
+        item[@"user"] = user;
+        item[@"points"] = points;
+        item[@"title"] = title;
+        item[@"numchildren"] = comments;
+        if (href != nil) item[@"url"] = href;
+        item[@"date"] = date;
+        if (body != nil) item[@"body"] = body;
+        if (more != nil) item[@"more"] = more;
+        item[@"identifier"] = identifier;
         return item;
     } else {
         NSLog(@"Bug: Ignoring unparsable submission.");
@@ -301,7 +301,7 @@ typedef enum {
 
 - (NSDictionary *)parseCommentWithElement:(XMLElement *)comment {
     NSNumber *depth = nil;
-    NSNumber *points = [NSNumber numberWithInt:0];
+    NSNumber *points = @0;
     NSString *body = nil;
     NSString *user = nil;
     NSNumber *identifier = nil;
@@ -363,15 +363,15 @@ typedef enum {
                                         user = [content stringByRemovingHTMLTags];
                                         user = [user stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
                                     } else if ([href hasPrefix:@"item?id="] && [content isEqual:@"link"]) {
-                                        identifier = [NSNumber numberWithInt:[[href substringFromIndex:[@"item?id=" length]] intValue]];
+                                        identifier = @([[href substringFromIndex:[@"item?id=" length]] intValue]);
                                     } else if ([href hasPrefix:@"item?id="] && [content isEqual:@"parent"]) {
-                                        parent = [NSNumber numberWithInt:[[href substringFromIndex:[@"item?id=" length]] intValue]];
+                                        parent = @([[href substringFromIndex:[@"item?id=" length]] intValue]);
                                     } else if ([href hasPrefix:@"item?id="]) {
-                                        submission = [NSNumber numberWithInt:[[href substringFromIndex:[@"item?id=" length]] intValue]];
+                                        submission = @([[href substringFromIndex:[@"item?id=" length]] intValue]);
                                     }
                                 } else if ([tag isEqual:@"span"]) {
                                     NSInteger end = [content rangeOfString:@" "].location;
-                                    if (end != NSNotFound) points = [NSNumber numberWithInt:[[content substringToIndex:end] intValue]];
+                                    if (end != NSNotFound) points = @([[content substringToIndex:end] intValue]);
                                 }
                             }
                         }
@@ -393,7 +393,7 @@ typedef enum {
                     // Yes, really: HN uses a 1x1 gif to indent comments. It's like 1999 all over again. :(
                     NSInteger width = [[element2 attributeWithName:@"width"] intValue];
                     // Each comment is "indented" by setting the width to "depth * 40", so divide to get the depth.
-                    depth = [NSNumber numberWithInt:(width / 40)];
+                    depth = @(width / 40);
                 }
             }
         }
@@ -406,20 +406,20 @@ typedef enum {
     }
     
     if (more != nil) {
-        return [NSDictionary dictionaryWithObject:more forKey:@"more"];
+        return @{@"more": more};
     } else if (user != nil && identifier != nil) {
         // XXX: should this be more strict about what's a valid comment?
         NSMutableDictionary *item = [NSMutableDictionary dictionary];
-        [item setObject:user forKey:@"user"];
-        if (body != nil) [item setObject:body forKey:@"body"];
-        if (date != nil) [item setObject:date forKey:@"date"];
-        if (points != nil) [item setObject:points forKey:@"points"];
-        if (depth != nil) [item setObject:[NSMutableArray array] forKey:@"children"];
-        if (depth != nil) [item setObject:depth forKey:@"depth"];
-        if (parent != nil) [item setObject:parent forKey:@"parent"];
-        if (submission != nil) [item setObject:submission forKey:@"submission"];
+        item[@"user"] = user;
+        if (body != nil) item[@"body"] = body;
+        if (date != nil) item[@"date"] = date;
+        if (points != nil) item[@"points"] = points;
+        if (depth != nil) item[@"children"] = [NSMutableArray array];
+        if (depth != nil) item[@"depth"] = depth;
+        if (parent != nil) item[@"parent"] = parent;
+        if (submission != nil) item[@"submission"] = submission;
 
-        [item setObject:identifier forKey:@"identifier"];
+        item[@"identifier"] = identifier;
         
         return item;
     } else {
@@ -438,11 +438,11 @@ typedef enum {
         if ([self rootElementIsSubmission:document]) 
             item = [self parseSubmissionWithElements:[rootElement children]];
         else 
-            item = [self parseCommentWithElement:[[rootElement children] objectAtIndex:0]];
+            item = [self parseCommentWithElement:[rootElement children][0]];
         root = [[item mutableCopy] autorelease];
     }
     if (root == nil) root = [NSMutableDictionary dictionary];
-    [root setObject:[NSMutableArray array] forKey:@"children"];
+    root[@"children"] = [NSMutableArray array];
     
     NSArray *comments = [self contentRowsForDocument:document pageLayoutType:type];
     NSMutableArray *lasts = [NSMutableArray array];
@@ -451,18 +451,18 @@ typedef enum {
     NSString *moreToken = nil;
     
     for (NSInteger i = 0; i < [comments count]; i++) {
-        XMLElement *element = [comments objectAtIndex:i];
+        XMLElement *element = comments[i];
         if ([[element content] length] == 0) continue;
         NSDictionary *comment = [self parseCommentWithElement:element];
         if (comment == nil) continue;
         
-        if ([comment objectForKey:@"more"] != nil) {
-            moreToken = [comment objectForKey:@"more"];
+        if (comment[@"more"] != nil) {
+            moreToken = comment[@"more"];
             continue;
         }
         
         NSDictionary *parent = nil;
-        NSNumber *depth = [comment objectForKey:@"depth"];
+        NSNumber *depth = comment[@"depth"];
         
         if (depth != nil) {
             if ([depth intValue] >= [lasts count]) continue;
@@ -474,11 +474,11 @@ typedef enum {
             parent = root;
         }
         
-        NSMutableArray *children = [parent objectForKey:@"children"];
+        NSMutableArray *children = parent[@"children"];
         [children addObject:comment];
     }
     
-    if (moreToken != nil) [root setObject:moreToken forKey:@"more"];
+    if (moreToken != nil) root[@"more"] = moreToken;
     
     return root;
 }
@@ -492,14 +492,14 @@ typedef enum {
 
     // Three rows are used per submission.
     for (NSInteger i = 0; i < [submissions count]; i += 3) {
-        XMLElement *first = [submissions objectAtIndex:i];
-        XMLElement *second = i + 1 < [submissions count] ? [submissions objectAtIndex:i + 1] : nil;
-        XMLElement *third = i + 2 < [submissions count] ? [submissions objectAtIndex:i + 2] : nil;
+        XMLElement *first = submissions[i];
+        XMLElement *second = i + 1 < [submissions count] ? submissions[i + 1] : nil;
+        XMLElement *third = i + 2 < [submissions count] ? submissions[i + 2] : nil;
         
         NSDictionary *submission = [self parseSubmissionWithElements:[NSArray arrayWithObjects:first, second, third, nil]];
         if (submission != nil) {
-            if ([submission objectForKey:@"more"] != nil) {
-                moreToken = [submission objectForKey:@"more"];
+            if (submission[@"more"] != nil) {
+                moreToken = submission[@"more"];
             } else {
                 [result addObject:submission];
             }
@@ -507,8 +507,8 @@ typedef enum {
     }
     
     NSMutableDictionary *item = [NSMutableDictionary dictionary];
-    [item setObject:result forKey:@"children"];
-    if (moreToken != nil) [item setObject:moreToken forKey:@"more"];
+    item[@"children"] = result;
+    if (moreToken != nil) item[@"more"] = moreToken;
     return item;
 }
 

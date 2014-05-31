@@ -29,7 +29,7 @@
     if (![self isValidURL:url_]) return NO;
     
     NSDictionary *parameters = [url_ parameterDictionary];
-    return [parameters objectForKey:@"id"];
+    return parameters[@"id"];
 }
 
 + (NSString *)pathForURLWithIdentifier:(id)identifier_ infoDictionary:(NSDictionary *)info {
@@ -37,8 +37,8 @@
 }
 
 + (NSDictionary *)parametersForURLWithIdentifier:(id)identifier_ infoDictionary:(NSDictionary *)info {
-    if (identifier_ != nil) return [NSDictionary dictionaryWithObject:identifier_ forKey:@"id"];
-    else return [NSDictionary dictionary];
+    if (identifier_ != nil) return @{@"id": identifier_};
+    else return @{};
 }
 
 + (id)session:(HNSession *)session userWithIdentifier:(id)identifier_ {
@@ -46,10 +46,10 @@
 }
 
 - (void)loadFromDictionary:(NSDictionary *)dictionary complete:(BOOL)complete {
-    [self setAbout:[dictionary objectForKey:@"about"]];
-    [self setKarma:[[dictionary objectForKey:@"karma"] intValue]];
-    [self setAverage:[[dictionary objectForKey:@"average"] floatValue]];
-    [self setCreated:[[dictionary objectForKey:@"created"] stringByRemovingSuffix:@" ago"]];
+    [self setAbout:dictionary[@"about"]];
+    [self setKarma:[dictionary[@"karma"] intValue]];
+    [self setAverage:[dictionary[@"average"] floatValue]];
+    [self setCreated:[dictionary[@"created"] stringByRemovingSuffix:@" ago"]];
 
     [super loadFromDictionary:dictionary complete:complete];
 }

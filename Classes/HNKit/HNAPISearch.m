@@ -62,13 +62,13 @@
 
 - (void)handleResponse {
 	id responseJSON = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:NULL];
-	NSArray *rawResults = [[NSArray alloc] initWithArray:[responseJSON objectForKey:@"hits"]];
-    
+	NSArray *rawResults = [[NSArray alloc] initWithArray:responseJSON[@"hits"]];
+
 	self.entries = [NSMutableArray array];
     
 	for (NSDictionary *result in rawResults) {
 		NSDictionary *item = [self itemFromRaw:result];
-		HNEntry *entry = [HNEntry session:session entryWithIdentifier:[item objectForKey:@"identifier"]];
+		HNEntry *entry = [HNEntry session:session entryWithIdentifier:item[@"identifier"]];
 
 		[entry loadFromDictionary:item complete:NO];
 		[entries addObject:entry];
@@ -79,7 +79,7 @@
 	[responseData release];
 	responseData = nil;
 
-	NSDictionary *dictToBePassed = [NSDictionary dictionaryWithObject:entries forKey:@"array"];
+	NSDictionary *dictToBePassed = @{@"array": entries};
 	NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 	[notificationCenter postNotificationName:@"searchDone" object:nil userInfo:dictToBePassed];	
 }
@@ -116,14 +116,14 @@
         timeAgo = @"";
     }
 	
-	if ((NSNull *)user != [NSNull null]) [item setObject:user forKey:@"user"];
-	if ((NSNull *)points != [NSNull null]) [item setObject:points forKey:@"points"];
-	if ((NSNull *)title != [NSNull null]) [item setObject:title forKey:@"title"];
-	if ((NSNull *)comments != [NSNull null]) [item setObject:comments forKey:@"numchildren"];
-	if ((NSNull *)url != [NSNull null]) [item setObject:url forKey:@"url"];
-	if ((NSNull *)timeAgo != [NSNull null]) [item setObject:timeAgo forKey:@"date"];
-	if ((NSNull *)body != [NSNull null]) [item setObject:body forKey:@"body"];
-	if ((NSNull *)identifier != [NSNull null]) [item setObject:identifier forKey:@"identifier"];
+	if ((NSNull *)user != [NSNull null]) item[@"user"] = user;
+	if ((NSNull *)points != [NSNull null]) item[@"points"] = points;
+	if ((NSNull *)title != [NSNull null]) item[@"title"] = title;
+	if ((NSNull *)comments != [NSNull null]) item[@"numchildren"] = comments;
+	if ((NSNull *)url != [NSNull null]) item[@"url"] = url;
+	if ((NSNull *)timeAgo != [NSNull null]) item[@"date"] = timeAgo;
+	if ((NSNull *)body != [NSNull null]) item[@"body"] = body;
+	if ((NSNull *)identifier != [NSNull null]) item[@"identifier"] = identifier;
 	return item;
 }
 

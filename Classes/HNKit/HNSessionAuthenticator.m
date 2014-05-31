@@ -144,11 +144,9 @@
         return;
     }
     
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-        formfnid, @"fnid",
-        username, @"u",
-        password, @"p",
-    nil];
+    NSDictionary *query = @{@"fnid": formfnid,
+        @"u": username,
+        @"p": password};
 
     NSURL *submitURL = [[NSURL URLWithString:submiturl relativeToURL:kHNWebsiteURL] absoluteURL];
     

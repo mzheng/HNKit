@@ -23,7 +23,7 @@
     if (successfully) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kHNSubmissionSuccessNotification object:self];
     } else {
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHNSubmissionFailureNotification object:self userInfo:[NSDictionary dictionaryWithObject:error forKey:@"error"]];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kHNSubmissionFailureNotification object:self userInfo:@{@"error": error}];
     }
 }
 

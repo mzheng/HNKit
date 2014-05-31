@@ -61,12 +61,10 @@
         if ([submission type] == kHNSubmissionTypeSubmission) {
             XMLElement *element = [document firstElementMatchingPath:@"//input[@name='fnid']"];
             
-            NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                [element attributeWithName:@"value"], @"fnid",
-                [submission title] ?: @"", @"t",
-                [[submission destination] absoluteString] ?: @"", @"u",
-                [submission body] ?: @"", @"x",
-            nil];
+            NSDictionary *query = @{@"fnid": [element attributeWithName:@"value"],
+                @"t": [submission title] ?: @"",
+                @"u": [[submission destination] absoluteString] ?: @"",
+                @"x": [submission body] ?: @""};
 
             [request setURL:[[NSURL URLWithString:@"/r" relativeToURL:kHNWebsiteURL] absoluteURL]];
             [request setHTTPMethod:@"POST"];
@@ -78,7 +76,7 @@
             XMLElement *element = [document firstElementMatchingPath:query];
             
             if (element == nil) {
-                NSError *error = [NSError errorWithDomain:@"" code:0 userInfo:[NSDictionary dictionaryWithObject:@"Voting not allowed." forKey:NSLocalizedDescriptionKey]];
+                NSError *error = [NSError errorWithDomain:@"" code:0 userInfo:@{NSLocalizedDescriptionKey: @"Voting not allowed."}];
                 [self _completedSuccessfully:NO withError:error];
                 return;
             } else {
@@ -89,14 +87,12 @@
             XMLElement *element = [document firstElementMatchingPath:@"//input[@name='fnid']"];
             
             if (element == nil) {
-                NSError *error = [NSError errorWithDomain:@"" code:0 userInfo:[NSDictionary dictionaryWithObject:@"Replying not allowed." forKey:NSLocalizedDescriptionKey]];
+                NSError *error = [NSError errorWithDomain:@"" code:0 userInfo:@{NSLocalizedDescriptionKey: @"Replying not allowed."}];
                 [self _completedSuccessfully:NO withError:error];
                 return;
             } else {
-                NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                    [element attributeWithName:@"value"], @"fnid",
-                    [submission body], @"text",
-                nil];
+                NSDictionary *query = @{@"fnid": [element attributeWithName:@"value"],
+                    @"text": [submission body]};
                 
                 [request setURL:[[NSURL URLWithString:@"/r" relativeToURL:kHNWebsiteURL] absoluteURL]];
                 [request setHTTPMethod:@"POST"];
@@ -107,7 +103,7 @@
             XMLElement *element = [document firstElementMatchingPath:@"//a[text()='flag' and starts-with(@href,'/r?fnid=')]"];
             
             if (element == nil) {
-                NSError *error = [NSError errorWithDomain:@"" code:0 userInfo:[NSDictionary dictionaryWithObject:@"Flagging not allowed." forKey:NSLocalizedDescriptionKey]];
+                NSError *error = [NSError errorWithDomain:@"" code:0 userInfo:@{NSLocalizedDescriptionKey: @"Flagging not allowed."}];
                 [self _completedSuccessfully:NO withError:error];
                 return;
             } else {

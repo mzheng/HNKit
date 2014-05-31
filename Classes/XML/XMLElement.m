@@ -74,7 +74,7 @@ static int XMLElementOutputCloseCallback(void *context) {
         }
     } else {
         xmlChar *nodeContent = xmlNodeGetContent(node);
-        [content appendString:[NSString stringWithUTF8String:(char *) nodeContent]];
+        [content appendString:@((char *) nodeContent)];
         xmlFree(nodeContent);
     }
     
@@ -89,7 +89,7 @@ static int XMLElementOutputCloseCallback(void *context) {
     char *nodeName = (char *) node->name;
     if (nodeName == NULL) nodeName = "";
     
-    NSString *name = [NSString stringWithUTF8String:nodeName];
+    NSString *name = @(nodeName);
     return name;
 }
 
@@ -119,13 +119,13 @@ static int XMLElementOutputCloseCallback(void *context) {
     while (list) {
         NSString *name = nil, *value = nil;
         
-        name = [NSString stringWithCString:(const char *) list->name encoding:NSUTF8StringEncoding];
+        name = @((const char *) list->name);
         if (list->children != NULL && list->children->content != NULL) {
-            value = [NSString stringWithCString:(const char *) list->children->content encoding:NSUTF8StringEncoding];
+            value = @((const char *) list->children->content);
         }
         
         if (name != nil && value != nil) {
-            [attributes setObject:value forKey:name];
+            attributes[name] = value;
         }
                     
         list = list->next;
@@ -136,7 +136,7 @@ static int XMLElementOutputCloseCallback(void *context) {
 }
 
 - (NSString *)attributeWithName:(NSString *)name {
-    return [[self attributes] objectForKey:name];
+    return [self attributes][name];
 }
 
 - (BOOL)isTextNode {
@@ -155,7 +155,7 @@ static int XMLElementOutputCloseCallback(void *context) {
     NSArray *elements = [self elementsMatchingPath:xpath];
 
     if ([elements count] >= 1) {
-        return [elements objectAtIndex:0];
+        return elements[0];
     } else {
         return nil;
     }

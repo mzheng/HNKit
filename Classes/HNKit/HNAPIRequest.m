@@ -69,7 +69,7 @@
     if (result != nil) {
         [self performSelectorOnMainThread:@selector(completeSuccessfullyWithResult:) withObject:result waitUntilDone:YES];
     } else {
-        NSError *error = [NSError errorWithDomain:@"error" code:100 userInfo:[NSDictionary dictionaryWithObject:@"Error scraping." forKey:NSLocalizedDescriptionKey]];
+        NSError *error = [NSError errorWithDomain:@"error" code:100 userInfo:@{NSLocalizedDescriptionKey: @"Error scraping."}];
         [self performSelectorOnMainThread:@selector(completeUnsuccessfullyWithError:) withObject:error waitUntilDone:YES];
     }
     

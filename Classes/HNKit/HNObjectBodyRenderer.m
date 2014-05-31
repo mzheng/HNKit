@@ -49,7 +49,7 @@ static CGFloat defaultFontSize = 13.0f;
     if (fontCache == nil) fontCache = [[NSCache alloc] init];
     
     // This is okay as we only setup the font based on the name and size anyway.
-    NSArray *key = [NSArray arrayWithObjects:[font fontName], [NSNumber numberWithFloat:[font pointSize]], nil];
+    NSArray *key = @[[font fontName], [NSNumber numberWithFloat:[font pointSize]]];
     
     if ([fontCache objectForKey:font]) {
         return (CTFontRef) [fontCache objectForKey:key];
@@ -165,32 +165,32 @@ static CGFloat defaultFontSize = 13.0f;
     };
         
     void(^formatBody)(NSMutableDictionary *, XMLElement *) = ^(NSMutableDictionary *attributes, XMLElement *element) {
-        [attributes setObject:(id) colorBody forKey:(NSString *) kCTForegroundColorAttributeName];
-        [attributes setObject:(id) fontBody forKey:(NSString *) kCTFontAttributeName];
+        attributes[(NSString *) kCTForegroundColorAttributeName] = (id) colorBody;
+        attributes[(NSString *) kCTFontAttributeName] = (id) fontBody;
     };
     
     void(^formatFont)(NSMutableDictionary *, XMLElement *) = ^(NSMutableDictionary *attributes, XMLElement *element) {
         NSString *colorText = [element attributeWithName:@"color"];
         CGColorRef color = [[self colorFromHexString:colorText] CGColor];
         
-        [attributes setObject:(id) color forKey:(NSString *) kCTForegroundColorAttributeName];
+        attributes[(NSString *) kCTForegroundColorAttributeName] = (id) color;
     };
     
     void(^formatCode)(NSMutableDictionary *, XMLElement *) = ^(NSMutableDictionary *attributes, XMLElement *element) {
-        [attributes setObject:(id) fontCode forKey:(NSString *) kCTFontAttributeName];
-        [attributes setObject:(id) kCFBooleanTrue forKey:@"PreserveWhitepace"];
+        attributes[(NSString *) kCTFontAttributeName] = (id) fontCode;
+        attributes[@"PreserveWhitepace"] = (id) kCFBooleanTrue;
     };
     
     void(^formatItalic)(NSMutableDictionary *, XMLElement *) = ^(NSMutableDictionary *attributes, XMLElement *element) {
-        [attributes setObject:(id) fontItalic forKey:(NSString *) kCTFontAttributeName];
+        attributes[(NSString *) kCTFontAttributeName] = (id) fontItalic;
     };
     
     void(^formatLink)(NSMutableDictionary *, XMLElement *) = ^(NSMutableDictionary *attributes, XMLElement *element) {
         NSString *href = [element attributeWithName:@"href"];
         
-        [attributes setObject:(id) colorLink forKey:(NSString *) kCTForegroundColorAttributeName];
-        if (href != nil) [attributes setObject:href forKey:@"LinkDestination"];
-        [attributes setObject:[NSNumber numberWithInt:arc4random()] forKey:@"LinkIdentifier"];
+        attributes[(NSString *) kCTForegroundColorAttributeName] = (id) colorLink;
+        if (href != nil) attributes[@"LinkDestination"] = href;
+        attributes[@"LinkIdentifier"] = [NSNumber numberWithInt:arc4random()];
     };
 
     void(^formatParagraph)(NSMutableDictionary *, XMLElement *) = ^(NSMutableDictionary *attributes, XMLElement *element) {
@@ -200,7 +200,7 @@ static CGFloat defaultFontSize = 13.0f;
         [bodyAttributed appendAttributedString:[newlineString autorelease]];
         
         NSMutableDictionary *blankLineAttributes = [[attributes mutableCopy] autorelease];
-        [blankLineAttributes setObject:(id) fontSmallParagraphBreak forKey:(NSString *) kCTFontAttributeName];
+        blankLineAttributes[(NSString *) kCTFontAttributeName] = (id) fontSmallParagraphBreak;
         NSAttributedString *blankLineString = [[NSAttributedString alloc] initWithString:@"\n" attributes:blankLineAttributes];
         [bodyAttributed appendAttributedString:[blankLineString autorelease]];
     };
@@ -212,22 +212,20 @@ static CGFloat defaultFontSize = 13.0f;
         [bodyAttributed appendAttributedString:[childString autorelease]];
     };
     
-    NSDictionary *tagActions = [NSDictionary dictionaryWithObjectsAndKeys:
-        [[formatParagraph copy] autorelease], @"p",
-        [[formatCode copy] autorelease], @"pre",
-        [[formatItalic copy] autorelease], @"i",
-        [[formatLink copy] autorelease], @"a",
-        [[formatFont copy] autorelease], @"font",
-        [[formatNewline copy] autorelease], @"br",
-        [[formatBody copy] autorelease], @"body",
-    nil];
+    NSDictionary *tagActions = @{@"p": [[formatParagraph copy] autorelease],
+        @"pre": [[formatCode copy] autorelease],
+        @"i": [[formatItalic copy] autorelease],
+        @"a": [[formatLink copy] autorelease],
+        @"font": [[formatFont copy] autorelease],
+        @"br": [[formatNewline copy] autorelease],
+        @"body": [[formatBody copy] autorelease]};
 
     __block void(^formatChildren)(XMLElement *) = ^(XMLElement *element) {
         for (XMLElement *child in [element children]) {
             if (![child isTextNode]) {
                 NSMutableDictionary *savedAttributes = [[currentAttributes mutableCopy] autorelease];
                 
-                NSAttributedString *(^formatAction)(NSMutableDictionary *, XMLElement *element) = [tagActions objectForKey:[child tagName]];
+                NSAttributedString *(^formatAction)(NSMutableDictionary *, XMLElement *element) = tagActions[[child tagName]];
                 if (formatAction != NULL) formatAction(currentAttributes, child);
                 
                 formatChildren(child);
@@ -237,7 +235,7 @@ static CGFloat defaultFontSize = 13.0f;
                 NSString *content = [child content];
                 
                 // strip out whitespace not in <pre> when 
-                if (![[currentAttributes objectForKey:@"PreserveWhitepace"] boolValue]) {
+                if (![currentAttributes[@"PreserveWhitepace"] boolValue]) {
                     while ([content rangeOfString:@"  "].location != NSNotFound) {
                         content = [content stringByReplacingOccurrencesOfString:@"  " withString:@" "];
                     }
@@ -326,7 +324,7 @@ static CGFloat defaultFontSize = 13.0f;
     };
     
     for (NSInteger i = 0; i < [lines count]; i++) {
-        CTLineRef line = (CTLineRef) [lines objectAtIndex:i];
+        CTLineRef line = (CTLineRef) lines[i];
         CGRect lineBounds = computeLineRect(line, i);
         
         CGFloat ascent, descent, leading;
@@ -337,26 +335,26 @@ static CGFloat defaultFontSize = 13.0f;
             NSArray *runs = (NSArray *) CTLineGetGlyphRuns(line);
                         
             for (NSInteger j = 0; j < [runs count]; j++) {
-                CTRunRef run = (CTRunRef) [runs objectAtIndex:j];
+                CTRunRef run = (CTRunRef) runs[j];
                 CGRect runBounds = computeRunRect(run, line, lineBounds);
                 
                 if (runBounds.origin.x + runBounds.size.width > point.x) {
                     NSDictionary *attributes = (NSDictionary *) CTRunGetAttributes(run);
-                    NSURL *url = [NSURL URLWithString:[attributes objectForKey:@"LinkDestination"]];
-                    NSNumber *linkIdentifier = [attributes objectForKey:@"LinkIdentifier"];
+                    NSURL *url = [NSURL URLWithString:attributes[@"LinkDestination"]];
+                    NSNumber *linkIdentifier = attributes[@"LinkIdentifier"];
                     
                     if (linkIdentifier != nil && rects != NULL) {
                         NSMutableSet *runRects = [NSMutableSet set];
                         
                         for (NSInteger k = 0; k < [lines count]; k++) {
-                            CTLineRef line = (CTLineRef) [lines objectAtIndex:k];
+                            CTLineRef line = (CTLineRef) lines[k];
                             NSArray *runs = (NSArray *) CTLineGetGlyphRuns(line);
 
                             for (NSInteger l = 0; l < [runs count]; l++) {
-                                CTRunRef run = (CTRunRef) [runs objectAtIndex:l];
+                                CTRunRef run = (CTRunRef) runs[l];
                                 NSDictionary *attributes = (NSDictionary *) CTRunGetAttributes(run);
 
-                                NSNumber *runIdentifier = [attributes objectForKey:@"LinkIdentifier"];
+                                NSNumber *runIdentifier = attributes[@"LinkIdentifier"];
                                 if ([runIdentifier isEqual:linkIdentifier]) {
                                     CGRect lineRect = computeLineRect(line, k);
                                     CGRect runRect = computeRunRect(run, line, lineRect);

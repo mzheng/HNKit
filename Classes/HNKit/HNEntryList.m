@@ -22,7 +22,7 @@
     if (![self isValidURL:url_]) return nil;
 
     NSDictionary *parameters = [url_ parameterDictionary];
-    if ([parameters objectForKey:@"id"] != nil) return [NSDictionary dictionaryWithObject:[parameters objectForKey:@"id"] forKey:@"user"];
+    if (parameters[@"id"] != nil) return @{@"user": parameters[@"id"]};
     else return nil;
 }
 
@@ -40,16 +40,16 @@
 }
 
 + (NSDictionary *)parametersForURLWithIdentifier:(id)identifier_ infoDictionary:(NSDictionary *)info {
-    if (info != nil && [info objectForKey:@"user"] != nil) {
-        return [NSDictionary dictionaryWithObject:[info objectForKey:@"user"] forKey:@"id"];
+    if (info != nil && info[@"user"] != nil) {
+        return @{@"id": info[@"user"]};
     } else {
-        return [NSDictionary dictionary];
+        return @{};
     }
 }
 
 + (id)session:(HNSession *)session entryListWithIdentifier:(HNEntryListIdentifier)identifier_ user:(HNUser *)user_ {
     NSDictionary *info = nil;
-    if (user_ != nil) info = [NSDictionary dictionaryWithObject:[user_ identifier] forKey:@"user"];
+    if (user_ != nil) info = @{@"user": [user_ identifier]};
     
     return [self session:session objectWithIdentifier:identifier_ infoDictionary:info];
 }
@@ -60,14 +60,14 @@
 
 - (void)loadInfoDictionary:(NSDictionary *)info {
     if (info != nil) {
-        NSString *identifier_ = [info objectForKey:@"user"];
+        NSString *identifier_ = info[@"user"];
         [self setUser:[HNUser session:session userWithIdentifier:identifier_]];
     }
 }
 
 - (NSDictionary *)infoDictionary {
     if (user != nil) {
-        return [NSDictionary dictionaryWithObject:[user identifier] forKey:@"user"];
+        return @{@"user": [user identifier]};
     } else {
         return [super infoDictionary];
     }
@@ -76,13 +76,13 @@
 - (void)loadFromDictionary:(NSDictionary *)response complete:(BOOL)complete {
     NSMutableArray *children = [NSMutableArray array];
     
-    for (NSDictionary *entryDictionary in [response objectForKey:@"children"]) {
-        HNEntry *entry = [HNEntry session:session entryWithIdentifier:[entryDictionary objectForKey:@"identifier"]];
+    for (NSDictionary *entryDictionary in response[@"children"]) {
+        HNEntry *entry = [HNEntry session:session entryWithIdentifier:entryDictionary[@"identifier"]];
         [entry loadFromDictionary:entryDictionary complete:NO];
         [children addObject:entry];
     }
 
-    NSArray *allEntries = [(pendingMoreEntries ? : [NSArray array]) arrayByAddingObjectsFromArray:children];
+    NSArray *allEntries = [(pendingMoreEntries ? : @[]) arrayByAddingObjectsFromArray:children];
     [self setEntries:allEntries];
 
     [super loadFromDictionary:response complete:complete];

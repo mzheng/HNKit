@@ -37,19 +37,17 @@
 }
 
 - (id)initWithSessionDictionary:(NSDictionary *)sessionDictionary {
-    HNSessionToken token_ = (HNSessionToken) [sessionDictionary objectForKey:@"HNKit:HNSession:Token"];
-    NSString *password_ = [sessionDictionary objectForKey:@"HNKit:HNSession:Password"];
-    NSString *name_ = [sessionDictionary objectForKey:@"HNKit:HNSession:Identifier"];
+    HNSessionToken token_ = (HNSessionToken) sessionDictionary[@"HNKit:HNSession:Token"];
+    NSString *password_ = sessionDictionary[@"HNKit:HNSession:Password"];
+    NSString *name_ = sessionDictionary[@"HNKit:HNSession:Identifier"];
 
     return [self initWithUsername:name_ password:password_ token:token_];
 }
 
 - (NSDictionary *)sessionDictionary {
-    return [NSDictionary dictionaryWithObjectsAndKeys:
-        token, @"HNKit:HNSession:Token",
-        password, @"HNKit:HNSession:Password",
-        [self identifier], @"HNKit:HNSession:Identifier",
-    nil];
+    return @{@"HNKit:HNSession:Token": token,
+        @"HNKit:HNSession:Password": password,
+        @"HNKit:HNSession:Identifier": [self identifier]};
 }
 
 - (NSString *)identifier {
@@ -92,14 +90,12 @@
 - (void)addCookiesToRequest:(NSMutableURLRequest *)request {
     if (token == nil) return;
     
-    NSDictionary *properties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                kHNWebsiteHost, NSHTTPCookieDomain,
-                                @"/", NSHTTPCookiePath,
-                                @"user", NSHTTPCookieName,
-                                (NSString *) token, NSHTTPCookieValue,
-                                nil];
+    NSDictionary *properties = @{NSHTTPCookieDomain: kHNWebsiteHost,
+                                NSHTTPCookiePath: @"/",
+                                NSHTTPCookieName: @"user",
+                                NSHTTPCookieValue: (NSString *) token};
     NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:properties];
-    NSDictionary *headers = [NSHTTPCookie requestHeaderFieldsWithCookies:[NSArray arrayWithObject:cookie]];
+    NSDictionary *headers = [NSHTTPCookie requestHeaderFieldsWithCookies:@[cookie]];
     [request setAllHTTPHeaderFields:headers];
 }
 

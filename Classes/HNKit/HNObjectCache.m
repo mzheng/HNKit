@@ -116,7 +116,7 @@
     NSArray *cachePaths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 
     if ([cachePaths count] > 0) {
-        NSString *cachePath = [cachePaths objectAtIndex:0];
+        NSString *cachePath = cachePaths[0];
         NSString *objectPath = [cachePath stringByAppendingPathComponent:@"HNObjectCache"];
         objectPath = [objectPath stringByAppendingPathComponent:[session identifier]];
         return objectPath;
@@ -194,7 +194,7 @@
 
 - (HNObject *)objectFromCacheWithKey:(HNObjectCacheKey *)key {
     NSMutableDictionary *cache = [self cacheDictionary];
-    HNObject *object = [cache objectForKey:key];
+    HNObject *object = cache[key];
     return object;
 }
 
@@ -212,7 +212,7 @@
     HNObjectCacheKey *key = [HNObjectCacheKey objectCacheForObject:object];
 
     NSMutableDictionary *cache = [self cacheDictionary];
-    [cache setObject:object forKey:key];
+    cache[key] = object;
 }
 
 @end

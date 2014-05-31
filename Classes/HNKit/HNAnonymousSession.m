@@ -28,7 +28,7 @@
 }
 
 - (void)performSubmission:(HNSubmission *)submission target:(id)target action:(SEL)action {
-    [target performSelector:action withObject:nil withObject:[NSNumber numberWithBool:NO]];
+    [target performSelector:action withObject:nil withObject:@NO];
 }
 
 - (BOOL)isAnonymous {
